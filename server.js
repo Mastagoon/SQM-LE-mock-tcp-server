@@ -6,6 +6,7 @@ const host = '127.0.0.1';
 let connected = false
 
 const server = net.createServer()
+let startTime = new Date()
 
 server.listen(port, host, () => {
 	console.log(`server is listening on ${host}:${port}`)
@@ -18,11 +19,9 @@ server.on("connection", sock => {
 	sock.on("data", data => {
 		switch (data.toString().trim()) {
 			case "rx":
-				console.log("rx")
-				sock.write("r,-09.42m,0000005915Hz,0000000000c,0000000.000s, 027.0C")
+				sock.write(generateRandomizedResponse())
 				break
 			case "q!":
-				console.log("q!")
 				sock.end()
 				break
 		}
@@ -31,3 +30,13 @@ server.on("connection", sock => {
 
 	sock.on("end", () => connected = false)
 })
+
+function generateRandomizedResponse() {
+	const length = ((Math.random() * 20) - 10).toFixed(2) + "m"
+	const frequency = "000000" + Math.floor((Math.random() * 10000)) + "Hz"
+	const c = "00000000" + Math.floor(Math.random() * 99) + "c"
+	const timeElapsedMs = new Date().getTime() - startTime.getTime()
+	const t = (timeElapsedMs / 1000).toFixed(3) + "s"
+	const temperature = "0" + Math.floor(Math.random() * 30).toFixed(1) + "C"
+	return ["r", length, frequency, c, t, temperature].join(",")
+}
